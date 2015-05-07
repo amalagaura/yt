@@ -127,4 +127,25 @@ describe Yt::Snippet do
       it { expect(snippet.video).to be_nil }
     end
   end
+
+  describe 'comment snippets' do
+
+    let(:data) {
+      { "channelId"=> "UCSD8XRCainPt4EG5FNMipkA", "videoId"=> "-P7_0kktN8A", "textDisplay"=> "YOO HOOO\ufeff", "textOriginal"=> "YOO HOOO",
+        "authorDisplayName"=> "CRS Liveworld", "authorChannelUrl"=> "http://www.youtube.com/user/crsdevs",
+        "authorChannelId"=> {"value"=> "UCSD8XRCainPt4EG5FNMipkA"},
+        "authorProfileImageUrl"=> "https://lh3.googleusercontent.com/-LcuvZXkOLMQ/AAAAAAAAAAI/AAAAAAAAABY/RnHnRdUF55E/photo.jpg?sz=50"
+      }
+    }
+
+    it { expect(snippet.channel_id).to eq "UCSD8XRCainPt4EG5FNMipkA"}
+    it { expect(snippet.video_id).to eq "-P7_0kktN8A"}
+    it { expect(snippet.text_display).to eq "YOO HOOO\ufeff" }
+    it { expect(snippet.text_original).to eq "YOO HOOO" }
+    it { expect(snippet.author_display_name).to eq "CRS Liveworld" }
+    it { expect(snippet.author_channel_url).to eq "http://www.youtube.com/user/crsdevs" }
+    it { expect(snippet.author_channel_id).to eq "UCSD8XRCainPt4EG5FNMipkA" }
+    it { expect(snippet.author_profile_image_url).to eq "https://lh3.googleusercontent.com/-LcuvZXkOLMQ/AAAAAAAAAAI/AAAAAAAAABY/RnHnRdUF55E/photo.jpg?sz=50" }
+
+  end
 end

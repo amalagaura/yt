@@ -116,6 +116,8 @@ module Yt
       #     upload thumbnails using the resumable upload protocol.
       has_many :resumable_sessions
 
+      has_many :comment_threads
+
       # Override Resource's new to set statistics and content details as well
       # if the response includes them
       def initialize(options = {})

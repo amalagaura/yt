@@ -134,7 +134,7 @@ module Yt
       # @return [nil] if the resource is a playlist.
       # @return [nil] if the resource is a video.
       def video_id
-        resource_id['videoId']
+        resource_id['videoId'] || data['videoId']
       end
 
       # @return [Yt::Models::Video] the video the playlist item represents in
@@ -158,6 +158,25 @@ module Yt
       def complete?
         @complete ||= data.fetch :complete, true
       end
+
+      # for comment snippets
+      has_attribute :text_display
+      has_attribute :text_original
+      has_attribute :parent_id
+      has_attribute :author_display_name
+      has_attribute :author_profile_image_url
+      has_attribute :author_channel_url
+      # doesn't play nice here since it's nested
+      # has_attribute :author_channel_id
+      has_attribute :can_rate
+      has_attribute :viewer_rating
+      has_attribute :like_count
+      has_attribute :updated_at, type: Time
+
+      def author_channel_id
+        data.fetch('authorChannelId', {}).fetch('value', nil)
+      end
+
 
     private
 
