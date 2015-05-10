@@ -37,10 +37,10 @@ module Yt
       def comment_threads_params
         {}.tap do |params|
           params[:video_id] = @parent.id
-          # upper limit for max_results is 100
-          params[:max_results] = 50
+          params[:max_results] = 100
           params[:part] = 'snippet'
           params[:order] = 'date'
+          params[:text_format] = 'plainText'
           params[:published_before] = @published_before if @published_before
           apply_where_params! params
         end
