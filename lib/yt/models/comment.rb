@@ -9,7 +9,8 @@ module Yt
         :author_channel_url, :author_channel_id, :can_rate, :viewer_rating, :like_count, :updated_at, to: :snippet
 
       def initialize(options = {})
-        @snippet = Snippet.new(data: (options['snippet'] || options[:snippet]))
+        @snippet = Snippet.new(data: (options['snippet'] || options[:snippet])) if (options['snippet'] || options[:snippet])
+        @auth = options[:auth]
         @id = options['id'] || options[:id]
         @etag = options['etag'] || options[:etag]
       end

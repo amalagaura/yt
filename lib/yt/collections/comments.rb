@@ -4,11 +4,20 @@ require 'yt/models/comment'
 module Yt
   module Collections
     # Provides methods to interact with a collection of YouTube comments.
-    class Comments < Base
+    class Comments < Resources
       def where(requirements = {})
         @published_before = nil
         super
       end
+
+      # def insert(options = {})
+      #   do_insert
+      # rescue Yt::Error => error
+      #   puts "error: #{error.inspect}"
+      #   # ignorable_error = error.reasons.include? 'subscriptionDuplicate'
+      #   # ignorable_error ||= (@parent.id == @auth.channel.id) if @auth
+      #   # raise error unless options[:ignore_errors] && ignorable_error
+      # end
 
     private
 
@@ -47,6 +56,9 @@ module Yt
         '/youtube/v3/comments'
       end
 
+      def insert_parts
+        {snippet: {keys: [:text_original, :parent_id]}}
+      end
     end
   end
 end

@@ -4,7 +4,7 @@ require 'yt/models/comment_thread'
 module Yt
   module Collections
     # Provides methods to interact with a collection of YouTube comment threads.
-    class CommentThreads < Base
+    class CommentThreads < Resources
       def where(requirements = {})
         @published_before = nil
         super
@@ -50,6 +50,15 @@ module Yt
         '/youtube/v3/commentThreads'
       end
 
+      def build_insert_body(attributes = {})
+        # {video_id: '', text_original: '', }
+        {:snippet => {:videoId => attributes[:video_id], :topLevelComment => {:snippet => {:textOriginal => attributes[:text_original]}}}}
+      end
+
+      # def insert_parts
+      #   # {snippet: {keys: [:video_id, top_level_comment: {keys: [snippet: {keys: [:text_original] } ] } ] } }
+      #   {snippet: {keys: [:video_id, :top_level_comment] } }
+      # end
     end
   end
 end
