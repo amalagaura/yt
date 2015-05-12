@@ -15,8 +15,13 @@ module Yt
         @etag = options['etag'] || options[:etag]
       end
 
-      def is_top_level_comment?
-        # id matches parent id - need to figure out how to get parent comment thread
+      def delete(options = {})
+        do_delete {@id = nil}
+        !exists?
+      end
+
+      def exists?
+        !@id.nil?
       end
 
     end

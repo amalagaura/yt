@@ -51,14 +51,9 @@ module Yt
       end
 
       def build_insert_body(attributes = {})
-        # {video_id: '', text_original: '', }
         {:snippet => {:videoId => attributes[:video_id], :topLevelComment => {:snippet => {:textOriginal => attributes[:text_original]}}}}
       end
 
-      # def insert_parts
-      #   # {snippet: {keys: [:video_id, top_level_comment: {keys: [snippet: {keys: [:text_original] } ] } ] } }
-      #   {snippet: {keys: [:video_id, :top_level_comment] } }
-      # end
     end
   end
 end
