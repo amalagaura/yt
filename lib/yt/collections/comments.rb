@@ -45,7 +45,7 @@ module Yt
           params[:parent_id] = @parent.id
           params[:max_results] = 100
           params[:part] = 'snippet'
-          params[:order] = 'date'
+          params[:order] = 'time'
           params[:text_format] = 'plainText'
           params[:published_before] = @published_before if @published_before
           apply_where_params! params
