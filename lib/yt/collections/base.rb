@@ -1,6 +1,7 @@
 require 'yt/actions/delete_all'
 require 'yt/actions/insert'
 require 'yt/actions/list'
+require 'yt/actions/set_moderation_status'
 require 'yt/errors/request_error'
 
 module Yt
@@ -9,6 +10,7 @@ module Yt
       include Actions::DeleteAll
       include Actions::Insert
       include Actions::List
+      include Actions::SetModerationStatus
 
       def initialize(options = {})
         @parent = options[:parent]

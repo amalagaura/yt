@@ -21,11 +21,13 @@ module Yt
         end
       end
 
-      def insert_params
-        path = "/youtube/v3/#{self.class.to_s.demodulize.camelize :lower}"
+      def insert_path
+        "/youtube/v3/#{self.class.to_s.demodulize.camelize :lower}"
+      end
 
+      def insert_params
         {}.tap do |params|
-          params[:path] = path
+          params[:path] = insert_path
           params[:host] = 'www.googleapis.com'
           params[:method] = :post
           params[:auth] = @auth

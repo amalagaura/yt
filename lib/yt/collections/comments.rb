@@ -5,19 +5,16 @@ module Yt
   module Collections
     # Provides methods to interact with a collection of YouTube comments.
     class Comments < Resources
+
       def where(requirements = {})
         @published_before = nil
         super
       end
 
-      # def insert(options = {})
-      #   do_insert
-      # rescue Yt::Error => error
-      #   puts "error: #{error.inspect}"
-      #   # ignorable_error = error.reasons.include? 'subscriptionDuplicate'
-      #   # ignorable_error ||= (@parent.id == @auth.channel.id) if @auth
-      #   # raise error unless options[:ignore_errors] && ignorable_error
-      # end
+      def reject(comment_id)
+        moderation_status_params = {id: comment_id, moderation_status: 'rejected'}
+        do_set_moderation_status(moderation_status_params)
+      end
 
     private
 
