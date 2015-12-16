@@ -3,6 +3,18 @@ require 'spec_helper'
 describe Yt::Collections::Comments do
   subject(:comments) {  Yt::Collections::Comments.new }
 
+  context '#insert' do
+
+    it "calls insert with the proper parameters" do
+      expect(comments).to receive(:do_insert).with({:params=>{:part=>"snippet"}, :body=>{:snippet=>{:textOriginal=>"blah", :parentId=>"123"}}})
+      request = double
+      allow(Yt::Request).to receive(:new).and_return(request)
+      allow(request).to receive(:run).and_return(true)
+      comments.insert({part: 'snippet', text_original: 'blah', parent_id: '123'})
+    end
+
+  end
+
   context '#reject' do
 
     it "calls setModerationStatus with the proper parameters" do
