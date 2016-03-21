@@ -17,12 +17,47 @@ describe Yt::Playlist, :device_app do
       expect(playlist.tags).to be_an Array
       expect(playlist.channel_id).to be_a String
       expect(playlist.channel_title).to be_a String
-      expect(playlist.privacy_status).to be_in Yt::Status::PRIVACY_STATUSES
+      expect(playlist.privacy_status).to be_a String
+      expect(playlist.item_count).to be_an Integer
     end
 
-    it { expect(playlist.playlist_items.first).to be_a Yt::PlaylistItem }
-    it { expect(playlist.playlist_items.first.snippet).to be_complete }
-    it { expect(playlist.playlist_items.first.position).not_to be_nil }
+    describe '.playlist_items' do
+      let(:item) { playlist.playlist_items.first }
+
+      specify 'returns the playlist item with the complete snippet' do
+        expect(item).to be_a Yt::PlaylistItem
+        expect(item.snippet).to be_complete
+        expect(item.position).not_to be_nil
+      end
+
+      specify 'does not eager-load the attributes of the item’s video' do
+        expect(item.video.instance_variable_defined? :@snippet).to be false
+        expect(item.video.instance_variable_defined? :@status).to be false
+        expect(item.video.instance_variable_defined? :@statistics_set).to be false
+      end
+    end
+
+    describe '.playlist_items.includes(:video)' do
+      let(:item) { playlist.playlist_items.includes(:video).first }
+
+      specify 'eager-loads the snippet, status and statistics of each video' do
+        expect(item.video.instance_variable_defined? :@snippet).to be true
+        expect(item.video.instance_variable_defined? :@status).to be true
+        expect(item.video.instance_variable_defined? :@statistics_set).to be true
+      end
+    end
+  end
+
+  context 'given a playlist that only includes other people’s private or deleted videos' do
+    let(:id) { 'PLsnYEvcCzABOsJdehqkIDhwz8CPGWzX59' }
+
+    describe '.playlist_items.includes(:video)' do
+      let(:items) { playlist.playlist_items.includes(:video).map{|i| i} }
+
+      specify 'returns nil (without running an infinite loop)' do
+        expect(items.size).to be 2
+      end
+    end
   end
 
   context 'given an unknown playlist' do

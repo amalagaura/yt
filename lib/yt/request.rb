@@ -11,6 +11,7 @@ require 'yt/errors/server_error'
 require 'yt/errors/unauthorized'
 
 module Yt
+  # @private
   # A wrapper around Net::HTTP to send HTTP requests to any web API and
   # return their result or raise an error if the result is unexpected.
   # The basic way to use Request is by calling +run+ on an instance.
@@ -33,12 +34,10 @@ module Yt
     # @option options [String] :host The host component of the request URI.
     # @option options [String] :path The path component of the request URI.
     # @option options [Hash] :params ({}) The params to use as the query
-    #   component of the request URI, for instance the Hash {a: 1, b: 2}
+    #   component of the request URI, for instance the Hash +{a: 1, b: 2}+
     #   corresponds to the query parameters "a=1&b=2".
     # @option options [Hash] :camelize_params (true) whether to transform
-    #   each key of params into a camel-case symbol before sending the
-    #   request. For instance, if set to true, the params {aBc: 1, d_e: 2,
-    #   'f' => 3} would be sent as {aBc: 1, dE: 2, f: 3}.
+    #   each key of params into a camel-case symbol before sending the request.
     # @option options [Hash] :request_format (:json) The format of the
     #   requesty body. If a request body is passed, it will be parsed
     #   according to this format before sending it in the request.
@@ -189,13 +188,17 @@ module Yt
     end
 
     # Returns whether it is worth to run a failed request again.
-    # There are two cases in which retrying a request might be worth:
+    # There are three cases in which retrying a request might be worth:
     # - when the server specifies that the request token has expired and
-    #   the user has to refresh the token in order to tryi again
+    #   the user has to refresh the token in order to try again
     # - when the server is unreachable, and waiting for a couple of seconds
     #   might solve the connection issues.
+    # - when the user has reached the quota for requests/second, and waiting
+    #   for a couple of seconds might solve the connection issues.
     def run_again?
-      refresh_token_and_retry? || server_error? && sleep_and_retry?
+      refresh_token_and_retry? ||
+      server_error? && sleep_and_retry? ||
+      exceeded_quota? && sleep_and_retry?(3)
     end
 
     # Returns the list of server errors worth retrying the request once.
@@ -203,6 +206,7 @@ module Yt
       [
         OpenSSL::SSL::SSLError,
         Errno::ETIMEDOUT,
+        Errno::EHOSTUNREACH,
         Errno::ENETUNREACH,
         Errno::ECONNRESET,
         Net::HTTPServerError
@@ -259,6 +263,11 @@ module Yt
     # @return [Boolean] whether the response matches any server error.
     def server_error?
       response_error == Errors::ServerError
+    end
+
+    # @return [Boolean] whether the request exceeds the YouTube quota
+    def exceeded_quota?
+      response_error == Errors::Forbidden && response.body =~ /quotaExceeded/
     end
 
     # @return [Boolean] whether the request lacks proper authorization.

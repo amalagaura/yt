@@ -3,7 +3,6 @@ require 'yt/models/snippet'
 
 describe Yt::Snippet do
   subject(:snippet) { Yt::Snippet.new data: data }
-  let(:data) { {} }
 
   describe '#data' do
     let(:data) { {"key"=>"value"} }

@@ -13,7 +13,7 @@ describe Yt::Channel, :device_app do
       expect(channel.description).to be_a String
       expect(channel.thumbnail_url).to be_a String
       expect(channel.published_at).to be_a Time
-      expect(channel.privacy_status).to be_in Yt::Status::PRIVACY_STATUSES
+      expect(channel.privacy_status).to be_a String
       expect(channel.view_count).to be_an Integer
       expect(channel.comment_count).to be_an Integer
       expect(channel.video_count).to be_an Integer
@@ -24,7 +24,7 @@ describe Yt::Channel, :device_app do
     describe '.videos' do
       let(:video) { channel.videos.first }
 
-      specify 'returns the videos in the channel without their tags' do
+      specify 'returns the videos in the channel without tags or category ID' do
         expect(video).to be_a Yt::Video
         expect(video.snippet).not_to be_complete
       end
@@ -62,9 +62,17 @@ describe Yt::Channel, :device_app do
         end
       end
 
+      describe '.includes(:category)' do
+        let(:video) { channel.videos.includes(:category, :status).first }
+
+        specify 'eager-loads the category (id and title) of each video' do
+          expect(video.instance_variable_defined? :@snippet).to be true
+          expect(video.instance_variable_defined? :@video_category).to be true
+        end
+      end
 
       describe 'when the channel has more than 500 videos' do
-        let(:id) { 'UCsmvakQZlvGsyjyOhmhvOsw' }
+        let(:id) { 'UC0v-tlzsn0QZwJnkiaUSJVQ' }
 
         specify 'the estimated and actual number of videos can be retrieved' do
           # @note: in principle, the following three counters should match, but
@@ -80,11 +88,47 @@ describe Yt::Channel, :device_app do
           expect(channel.videos.count).to be > 500
           expect(channel.videos.where(order: 'viewCount').count).to be 500
         end
+
+        specify 'over 500 videos can be retrieved even with a publishedBefore condition' do
+          # @note: these tests are slow because they go through multiple pages
+          # of results to test that we can overcome YouTube’s limitation of only
+          # returning the first 500 results when ordered by date.
+          today = Date.today.beginning_of_day.iso8601(0)
+          expect(channel.videos.where(published_before: today).count).to be > 500
+        end
+      end
+    end
+
+    describe '.playlists' do
+      describe '.includes(:content_details)' do
+        let(:playlist) { channel.playlists.includes(:content_details).first }
+
+        specify 'eager-loads the content details of each playlist' do
+          expect(playlist.instance_variable_defined? :@content_detail).to be true
+        end
       end
     end
 
     it { expect(channel.playlists.first).to be_a Yt::Playlist }
     it { expect{channel.delete_playlists}.to raise_error Yt::Errors::RequestError }
+
+    describe '.related_playlists' do
+      let(:related_playlists) { channel.related_playlists }
+
+      specify 'returns the list of associated playlist (Liked Videos, Uploads, ...)' do
+        expect(related_playlists.first).to be_a Yt::Playlist
+      end
+
+      specify 'includes public related playlists (such as Liked Videos)' do
+        uploads = related_playlists.select{|p| p.title.starts_with? 'Uploads'}
+        expect(uploads).not_to be_empty
+      end
+
+      specify 'does not includes private playlists (such as Watch Later)' do
+        watch_later = related_playlists.select{|p| p.title.starts_with? 'Watch'}
+        expect(watch_later).to be_empty
+      end
+    end
 
     specify 'with a public list of subscriptions' do
       expect(channel.subscribed_channels.first).to be_a Yt::Channel
@@ -154,10 +198,8 @@ describe Yt::Channel, :device_app do
       it { expect{channel.delete_playlists params}.to change{channel.playlists.count}.by(-1) }
     end
 
-    # @note: this test is just a reflection of YouTube irrational behavior of
-    # raising a 500 error when you try to subscribe to your own channel.
-    # `subscribe` will ignore the error, but `subscribe!` will raise it.
-    it { expect{channel.subscribe!}.to raise_error Yt::Errors::ServerError }
+    # Can't subscribe to your own channel.
+    it { expect{channel.subscribe!}.to raise_error Yt::Errors::RequestError }
     it { expect(channel.subscribe).to be_falsey }
 
     it 'returns valid reports for channel-related metrics' do
@@ -172,6 +214,8 @@ describe Yt::Channel, :device_app do
       expect{channel.subscribers_lost}.not_to raise_error
       expect{channel.favorites_added}.not_to raise_error
       expect{channel.favorites_removed}.not_to raise_error
+      expect{channel.videos_added_to_playlists}.not_to raise_error
+      expect{channel.videos_removed_from_playlists}.not_to raise_error
       expect{channel.estimated_minutes_watched}.not_to raise_error
       expect{channel.average_view_duration}.not_to raise_error
       expect{channel.average_view_percentage}.not_to raise_error
@@ -182,6 +226,7 @@ describe Yt::Channel, :device_app do
       expect{channel.earnings}.to raise_error Yt::Errors::Unauthorized
       expect{channel.impressions}.to raise_error Yt::Errors::Unauthorized
       expect{channel.monetized_playbacks}.to raise_error Yt::Errors::Unauthorized
+      expect{channel.playback_based_cpm}.to raise_error Yt::Errors::Unauthorized
 
       expect{channel.views_on 3.days.ago}.not_to raise_error
       expect{channel.comments_on 3.days.ago}.not_to raise_error
@@ -192,16 +237,13 @@ describe Yt::Channel, :device_app do
       expect{channel.subscribers_lost_on 3.days.ago}.not_to raise_error
       expect{channel.favorites_added_on 3.days.ago}.not_to raise_error
       expect{channel.favorites_removed_on 3.days.ago}.not_to raise_error
+      expect{channel.videos_added_to_playlists_on 3.days.ago}.not_to raise_error
+      expect{channel.videos_removed_from_playlists_on 3.days.ago}.not_to raise_error
       expect{channel.estimated_minutes_watched_on 3.days.ago}.not_to raise_error
       expect{channel.average_view_duration_on 3.days.ago}.not_to raise_error
       expect{channel.average_view_percentage_on 3.days.ago}.not_to raise_error
       expect{channel.earnings_on 3.days.ago}.to raise_error Yt::Errors::Unauthorized
       expect{channel.impressions_on 3.days.ago}.to raise_error Yt::Errors::Unauthorized
-    end
-
-    # @deprecated, use channel.viewer_percentage instead
-    it 'returns valid reports for channel-related demographics' do
-      expect{channel.viewer_percentages}.not_to raise_error
     end
 
     it 'cannot give information about its content owner' do
