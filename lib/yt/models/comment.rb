@@ -6,7 +6,7 @@ module Yt
       attr_reader :data, :video_id, :etag
 
       delegate :channel_id, :video_id, :text_display, :text_original, :parent_id, :author_display_name, :author_profile_image_url,
-        :author_channel_url, :author_channel_id, :can_rate, :viewer_rating, :like_count, :updated_at, to: :snippet
+        :author_channel_url, :author_channel_id, :can_rate, :viewer_rating, :like_count, :updated_at, :author_googleplus_profile_url, to: :snippet
 
       def initialize(options = {})
         @snippet = Snippet.new(data: (options['snippet'] || options[:snippet])) if (options['snippet'] || options[:snippet])

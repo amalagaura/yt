@@ -28,6 +28,7 @@ module Yt
       has_attribute :position, type: Integer
       has_attribute :resource_id, default: {}
       has_attribute :thumbnails, default: {}
+      has_attribute :author_googleplus_profile_url
 
       # @return [String] if the resource is a playlist item, the ID of the
       #   video the playlist item represents in the playlist.

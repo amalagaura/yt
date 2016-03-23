@@ -19,6 +19,7 @@ describe Yt::Comment do
        "value" => "UCSD8XRCainPt4EG5FNMipkA"
       },
       "canRate" => true,
+      "authorGoogleplusProfileUrl" => "https://plus.google.com/103743566087297217908",
       "viewerRating" => "none",
       "likeCount" => 0,
       "publishedAt" => "2015-05-04T21:34:54.423Z",
@@ -47,6 +48,7 @@ describe Yt::Comment do
     it { expect(comment.author_channel_id).to eq 'UCSD8XRCainPt4EG5FNMipkA' }
     it { expect(comment.published_at).to eq '2015-05-04T21:34:54.423Z' }
     it { expect(comment.updated_at).to eq '2015-05-04T21:34:54.423Z' }
+    it { expect(comment.author_googleplus_profile_url).to eq "https://plus.google.com/103743566087297217908" }
     it { expect(comment.can_rate).to eq true }
     it { expect(comment.viewer_rating).to eq 'none' }
     it { expect(comment.like_count).to eq 0 }
